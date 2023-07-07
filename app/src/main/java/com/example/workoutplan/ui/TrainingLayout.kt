@@ -129,7 +129,7 @@ fun TrainingLayoutPreview() {
     )
     exercises.add(
         Exercise(name = "Squat")
-            .addSet(WeightSet(50, 10))
+            .addSet(WeightSet(150, 10))
             .addSet(WeightSet(40, 8))
             .addSet(WeightSet(40, 6))
     )

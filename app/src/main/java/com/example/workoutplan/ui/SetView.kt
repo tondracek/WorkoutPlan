@@ -1,10 +1,12 @@
 package com.example.workoutplan.ui
 
 import android.content.Context
+import android.os.Build
 import android.os.CountDownTimer
 import android.os.VibrationEffect
 import android.os.Vibrator
-import androidx.compose.foundation.layout.Arrangement
+import android.os.VibratorManager
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,7 +26,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.workoutplan.ExerciseSet
@@ -47,17 +51,40 @@ fun SetView(exerciseName: String, set: ExerciseSet, updateParent: () -> Unit) {
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (set is WeightSet) {
-            Text(text = "Weight: ${set.weight}")
-            Text(text = "Reps: ${set.reps}")
+            Text(
+                text =
+                if (set.weight != 0) {
+                    "${set.weight} ${set.unit}"
+                } else {
+                    "No weight"
+                },
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .weight(1f)
+            )
+            Text(
+                text = "Reps: ${set.reps}",
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .weight(1f)
+            )
         } else if (set is TimedSet) {
-            Text(text = "Time: ${set.seconds}")
-            IconButton(onClick = {
-                showTimePopup.value = !showTimePopup.value
-            }) {
+            Text(
+                text = "Time: ${set.seconds}",
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .weight(1f)
+            )
+            IconButton(
+                onClick = {
+                    showTimePopup.value = !showTimePopup.value
+                },
+                modifier = Modifier
+                    .weight(1f)
+            ) {
                 Icon(
                     ImageVector.vectorResource(
                         id = R.drawable.outline_timer_24
@@ -73,7 +100,7 @@ fun SetView(exerciseName: String, set: ExerciseSet, updateParent: () -> Unit) {
                 doneState.value = it
                 set.done = it
                 updateParent()
-            },
+            }
         )
     }
 
@@ -94,11 +121,13 @@ fun TimePopup(
     doneState: MutableState<Boolean>,
     showPopup: MutableState<Boolean>
 ) {
+    val context = LocalContext.current
+
     val time = remember {
         mutableStateOf(timedSet.seconds * 1000L)
     }
 
-    var timerState = remember {
+    val timerState = remember {
         mutableStateOf(TimerState.NOT_STARTED)
     }
 
@@ -109,12 +138,16 @@ fun TimePopup(
 
         override fun onFinish() {
             timerState.value = TimerState.FINISHED
+            doneState.value = true
+            vibratePhone(context = context)
         }
     }
 
     AlertDialog(
         title = {
-            Text(text = exerciseName)
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text(text = exerciseName)
+            }
         },
         onDismissRequest = {
             showPopup.value = false
@@ -131,7 +164,7 @@ fun TimePopup(
         },
         confirmButton = {
             Button(
-                onClick = { doneState.value = true; showPopup.value = false },
+                onClick = { showPopup.value = false },
                 enabled = timerState.value == TimerState.FINISHED,
                 colors = ButtonDefaults.buttonColors(containerColor = done_button)
             ) {
@@ -181,10 +214,16 @@ enum class TimerState {
 }
 
 fun vibratePhone(context: Context) {
-    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+    val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val vibratorManager =
+            context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+        vibratorManager?.defaultVibrator
+    } else {
+        context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+    }
 
     if (vibrator?.hasVibrator() == true) {
-        val effect = VibrationEffect.createOneShot(1000, VibrationEffect.DEFAULT_AMPLITUDE)
+        val effect = VibrationEffect.createWaveform(longArrayOf(0, 150, 50, 150), -1)
         vibrator.vibrate(effect)
     }
 }

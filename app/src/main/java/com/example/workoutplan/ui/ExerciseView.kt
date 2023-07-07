@@ -63,7 +63,7 @@ fun ExerciseView(exercise: Exercise, updateParent: () -> Unit) {
                     Column(
                         Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 32.dp),
+                            .padding(horizontal = 16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         for (set in exercise.sets) {
