@@ -21,9 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.workoutplan.Exercise
-import com.example.workoutplan.TimedSet
-import com.example.workoutplan.WeightSet
+import com.example.workoutplan.classes.Exercise
+import com.example.workoutplan.classes.TimedSet
+import com.example.workoutplan.classes.WeightSet
 import com.example.workoutplan.ui.theme.WorkoutPlanTheme
 
 @Composable
@@ -36,6 +36,7 @@ fun ExerciseView(exercise: Exercise, updateParent: () -> Unit) {
     }
 
     fun update() {
+        // TODO: more effectively using boolean prevState and less updateParent()
         doneCount.value = exercise.doneSets()
         updateParent()
 

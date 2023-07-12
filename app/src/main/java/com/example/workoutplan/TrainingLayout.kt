@@ -1,4 +1,4 @@
-package com.example.workoutplan.ui
+package com.example.workoutplan
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,36 +27,37 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.workoutplan.Exercise
-import com.example.workoutplan.TimedSet
-import com.example.workoutplan.WeightSet
+import com.example.workoutplan.classes.Exercise
+import com.example.workoutplan.classes.TimedSet
+import com.example.workoutplan.classes.Training
+import com.example.workoutplan.classes.WeightSet
+import com.example.workoutplan.ui.ExerciseView
 import com.example.workoutplan.ui.theme.WorkoutPlanTheme
 import com.example.workoutplan.ui.theme.done_button
 import com.example.workoutplan.ui.theme.on_done_button
-import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TrainingLayout(trainingName: String, exercises: ArrayList<Exercise>) {
-    val startTime = LocalTime.now()
-
+fun TrainingLayout(training: Training, returnFunction: (ArrayList<Exercise>) -> Unit) {
     val doneExercises = remember {
         mutableStateOf(0)
     }
 
     fun update() {
-        doneExercises.value = exercises.count { it.isDone() }
+        doneExercises.value = training.exercises.count { it.isDone() }
     }
 
     fun isDone(): Boolean {
-        return doneExercises.value == exercises.size
+        return doneExercises.value == training.exercises.size
     }
 
     Scaffold(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),
         topBar = {
             TopAppBar(
-                title = { Text(text = trainingName) },
+                title = {
+                    Text(text = training.name)
+                },
                 colors = TopAppBarDefaults.smallTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
@@ -75,7 +76,9 @@ fun TrainingLayout(trainingName: String, exercises: ArrayList<Exercise>) {
                 ) {
                     if (isDone()) {
                         Button(
-                            onClick = { /*TODO*/ },
+                            onClick = {
+                                returnFunction(training.exercises)
+                            },
                             colors = ButtonDefaults.buttonColors(containerColor = done_button)
                         ) {
                             Text(
@@ -88,7 +91,7 @@ fun TrainingLayout(trainingName: String, exercises: ArrayList<Exercise>) {
                         }
                     } else {
                         Text(
-                            text = "${doneExercises.value}/${exercises.size}",
+                            text = "${doneExercises.value}/${training.exercises.size}",
                             fontSize = 40.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -102,7 +105,7 @@ fun TrainingLayout(trainingName: String, exercises: ArrayList<Exercise>) {
                 .verticalScroll(rememberScrollState())
                 .padding(innerPadding)
         ) {
-            for (exercise in exercises) {
+            for (exercise in training.exercises) {
                 ExerciseView(exercise = exercise) { update() }
             }
         }
@@ -112,35 +115,39 @@ fun TrainingLayout(trainingName: String, exercises: ArrayList<Exercise>) {
 @Preview(showBackground = true)
 @Composable
 fun TrainingLayoutPreview() {
-    val exercises: ArrayList<Exercise> = arrayListOf()
+    WorkoutPlanTheme {
+        TrainingLayout(exampleTraining()) {}
+    }
+}
 
-    exercises.add(
+fun exampleTraining(): Training {
+    val training = Training("Preview Training")
+
+    training.addExercise(
         Exercise(name = "Pull ups")
             .addSet(WeightSet(0, 10))
             .addSet(WeightSet(0, 8))
             .addSet(WeightSet(0, 6))
     )
 
-    exercises.add(
+    training.addExercise(
         Exercise(name = "Bench")
             .addSet(WeightSet(100, 10))
             .addSet(WeightSet(120, 8))
             .addSet(WeightSet(120, 6))
     )
-    exercises.add(
-        Exercise(name = "Squat")
-            .addSet(WeightSet(150, 10))
-            .addSet(WeightSet(40, 8))
-            .addSet(WeightSet(40, 6))
-    )
-    exercises.add(
+    training.addExercise(
         Exercise(name = "Plank")
             .addSet(TimedSet(3))
             .addSet(TimedSet(10))
             .addSet(TimedSet(60))
     )
+    training.addExercise(
+        Exercise(name = "Squat")
+            .addSet(WeightSet(150, 10))
+            .addSet(WeightSet(40, 8))
+            .addSet(WeightSet(40, 6))
+    )
 
-    WorkoutPlanTheme {
-        TrainingLayout(exercises = exercises, trainingName = "Basic Training")
-    }
+    return training
 }

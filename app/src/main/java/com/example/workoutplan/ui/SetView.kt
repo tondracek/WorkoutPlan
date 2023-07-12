@@ -31,10 +31,10 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.workoutplan.ExerciseSet
 import com.example.workoutplan.R
-import com.example.workoutplan.TimedSet
-import com.example.workoutplan.WeightSet
+import com.example.workoutplan.classes.ExerciseSet
+import com.example.workoutplan.classes.TimedSet
+import com.example.workoutplan.classes.WeightSet
 import com.example.workoutplan.ui.theme.done_button
 import com.example.workoutplan.ui.theme.on_done_button
 import kotlin.math.roundToInt
@@ -86,7 +86,7 @@ fun SetView(exerciseName: String, set: ExerciseSet, updateParent: () -> Unit) {
                     .weight(1f)
             ) {
                 Icon(
-                    ImageVector.vectorResource(
+                    imageVector = ImageVector.vectorResource(
                         id = R.drawable.outline_timer_24
                     ),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -109,7 +109,8 @@ fun SetView(exerciseName: String, set: ExerciseSet, updateParent: () -> Unit) {
             exerciseName = exerciseName,
             timedSet = set,
             doneState = doneState,
-            showPopup = showTimePopup
+            showPopup = showTimePopup,
+            updateParent = { updateParent() }
         )
     }
 }
@@ -119,7 +120,8 @@ fun TimePopup(
     exerciseName: String,
     timedSet: TimedSet,
     doneState: MutableState<Boolean>,
-    showPopup: MutableState<Boolean>
+    showPopup: MutableState<Boolean>,
+    updateParent: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -131,7 +133,7 @@ fun TimePopup(
         mutableStateOf(TimerState.NOT_STARTED)
     }
 
-    val timer = object : CountDownTimer(time.value, 500) {
+    val timer = object : CountDownTimer(time.value, 200) {
         override fun onTick(remainingTime: Long) {
             time.value = remainingTime
         }
@@ -139,6 +141,8 @@ fun TimePopup(
         override fun onFinish() {
             timerState.value = TimerState.FINISHED
             doneState.value = true
+            timedSet.done = true
+            updateParent()
             vibratePhone(context = context)
         }
     }

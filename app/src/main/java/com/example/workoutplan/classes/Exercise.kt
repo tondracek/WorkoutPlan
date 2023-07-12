@@ -1,18 +1,9 @@
-package com.example.workoutplan
+package com.example.workoutplan.classes
 
-class Exercise {
-    val name: String
-    val sets: ArrayList<ExerciseSet>
+import java.io.Serializable
 
-    constructor(name: String) {
-        this.name = name
-        sets = arrayListOf()
-    }
-
-    constructor(name: String, sets: ArrayList<ExerciseSet>) {
-        this.name = name
-        this.sets = sets
-    }
+class Exercise(val name: String) : Serializable {
+    val sets: ArrayList<ExerciseSet> = arrayListOf()
 
     fun isDone(): Boolean {
         return doneSets() == setsCount()
@@ -29,3 +20,5 @@ class Exercise {
 
     fun setsCount(): Int = sets.size
 }
+
+data class ExerciseArrayList(val exercises: ArrayList<Exercise>) : Serializable

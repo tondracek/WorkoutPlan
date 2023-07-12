@@ -1,6 +1,8 @@
-package com.example.workoutplan
+package com.example.workoutplan.classes
 
-interface ExerciseSet {
+import java.io.Serializable
+
+interface ExerciseSet: Serializable {
     var done: Boolean
 }
 
